@@ -3,6 +3,8 @@
 extern crate cocoa;
 extern crate libc;
 #[macro_use]
+extern crate log;
+#[macro_use]
 extern crate objc;
 
 mod platform;

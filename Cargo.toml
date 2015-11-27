@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Josh Matthews <josh@joshmatthews.net>"]
 
 [dependencies]
-cocoa = {path = "../cocoa-rs"}
+cocoa = {git = "https://github.com/servo/cocoa-rs.git", branch="strings-arrays-and-values-oh-my"}
 objc = "0.1.8"
 libc = "0.2"
+log = "0.3.4"

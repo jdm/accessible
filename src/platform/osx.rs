@@ -1,5 +1,5 @@
 use cocoa::base::{id, nil, BOOL};
-use cocoa::foundation::{NSArray, NSString, NSUInteger, NSPoint, NSValue, NSSize};
+use cocoa::foundation::{NSArray, NSString, NSPoint, NSValue, NSSize};
 use libc;
 use objc::declare::ClassDecl;
 use objc::runtime::{Class, Object, Sel};
@@ -153,35 +153,35 @@ fn class() -> *const Class {
         }
     }
 
-    extern fn accessibility_hit_test(this: &Object, _: Sel, _point: NSPoint) -> id {
+    extern fn accessibility_hit_test(_this: &Object, _: Sel, _point: NSPoint) -> id {
         nil
     }
 
-    extern fn accessibility_is_ignored(this: &Object, _: Sel) -> BOOL {
+    extern fn accessibility_is_ignored(_this: &Object, _: Sel) -> BOOL {
         false as BOOL
     }
 
-    extern fn accessibility_focused_uielement(this: &Object, _: Sel) -> id {
+    extern fn accessibility_focused_uielement(_this: &Object, _: Sel) -> id {
         nil
     }
 
-    extern fn accessibility_is_attribute_settable(this: &Object, _: Sel, _attribute: id) -> BOOL {
+    extern fn accessibility_is_attribute_settable(_this: &Object, _: Sel, _attribute: id) -> BOOL {
         false as BOOL
     }
 
-    extern fn accessibility_action_names(this: &Object, _: Sel) -> id {
+    extern fn accessibility_action_names(_this: &Object, _: Sel) -> id {
         unsafe {
             NSArray::array(nil)
         }
     }
 
-    extern fn accessibility_action_description(this: &Object, _: Sel, _action: id) -> id {
+    extern fn accessibility_action_description(_this: &Object, _: Sel, _action: id) -> id {
         unsafe {
             NSString::alloc(nil).init_str("")
         }
     }
 
-    extern fn accessibility_perform_action(this: &Object, _: Sel, _action: id) {
+    extern fn accessibility_perform_action(_this: &Object, _: Sel, _action: id) {
     }
 
     static mut object_class: *const Class = 0 as *const Class;

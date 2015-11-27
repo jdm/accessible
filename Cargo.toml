@@ -1,0 +1,9 @@
+[package]
+name = "accessible"
+version = "0.1.0"
+authors = ["Josh Matthews <josh@joshmatthews.net>"]
+
+[dependencies]
+cocoa = {path = "../cocoa-rs"}
+objc = "0.1.8"
+libc = "0.2"

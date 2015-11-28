@@ -91,6 +91,7 @@ impl Accessible for TextAccessible {
 }
 
 fn main() {
+    accessible::init();
     let cache = Arc::new(Mutex::new(Default::default()));
     let root = Arc::new(RootAccessible(Mutex::new((vec![], None, 0, 0, 0, 0))));
 

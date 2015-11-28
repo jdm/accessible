@@ -2,6 +2,8 @@
 
 #[cfg(target_os = "macos")]
 extern crate cocoa;
+#[cfg(target_os = "linux")]
+extern crate dbus;
 extern crate libc;
 #[macro_use]
 extern crate log;
@@ -58,4 +60,8 @@ fn native_id(accessible: &Arc<Accessible>) -> *const libc::c_void {
 
 pub fn to_native_ref<T: Accessible + 'static>(accessible: Arc<T>, cache: Arc<Mutex<NativeRefCache>>) -> NativeRef {
     platform::implementation::to_native_ref(accessible as Arc<Accessible>, cache)
+}
+
+pub fn init() {
+    platform::implementation::init();
 }

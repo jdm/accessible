@@ -220,3 +220,6 @@ fn class() -> *const Class {
         object_class
     }
 }
+
+pub fn init() {
+}

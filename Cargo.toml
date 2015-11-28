@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["Josh Matthews <josh@joshmatthews.net>"]
 
 [dependencies]
-cocoa = {git = "https://github.com/servo/cocoa-rs.git"}
-objc = "0.1.8"
 libc = "0.2"
 log = "0.3.4"
+
+[target.x86_64-apple-darwin.dependencies]
+cocoa = {git = "https://github.com/servo/cocoa-rs.git"}
+objc = "0.1.8"

@@ -1,9 +1,11 @@
 #![feature(raw)]
 
+#[cfg(target_os = "macos")]
 extern crate cocoa;
 extern crate libc;
 #[macro_use]
 extern crate log;
+#[cfg(target_os = "macos")]
 #[macro_use]
 extern crate objc;
 

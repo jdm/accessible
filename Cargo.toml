@@ -11,5 +11,5 @@ log = "0.4"
 dbus = "0.2.1"
 
 [target.x86_64-apple-darwin.dependencies]
-cocoa = {git = "https://github.com/servo/cocoa-rs.git"}
+cocoa = "0.19"
 objc = "0.2"

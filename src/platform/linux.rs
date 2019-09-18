@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 pub type NativeRef = usize;
 pub type NativeRefCache = HashMap<*const libc::c_void, usize>;
 
-pub fn to_native_ref(accessible: Arc<Accessible>, cache: Arc<Mutex<NativeRefCache>>) -> usize {
+pub fn to_native_ref(accessible: Arc<dyn Accessible>, cache: Arc<Mutex<NativeRefCache>>) -> usize {
     let aid = native_id(&accessible);
     if let Some(cached) = cache.lock().unwrap().get(&aid) {
         return *cached;

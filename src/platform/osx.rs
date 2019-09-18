@@ -6,7 +6,7 @@ use objc::declare::ClassDecl;
 use objc::runtime::{Class, Object, Sel};
 use std::collections::HashMap;
 use std::ffi::CStr;
-use std::sync::{Arc, Mutex, Once, ONCE_INIT};
+use std::sync::{Arc, Mutex, Once};
 
 pub type NativeRef = id;
 
@@ -197,7 +197,7 @@ fn class() -> *const Class {
     extern "C" fn accessibility_perform_action(_this: &Object, _: Sel, _action: id) {}
 
     static mut object_class: *const Class = 0 as *const Class;
-    static INIT: Once = ONCE_INIT;
+    static INIT: Once = Once::new();
 
     INIT.call_once(|| unsafe {
         // Create new NSObject

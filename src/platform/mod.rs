@@ -1,4 +1,4 @@
-#[cfg(target_os = "macosx")]
+#[cfg(target_os = "macos")]
 #[path = "osx.rs"]
 pub mod implementation;
 

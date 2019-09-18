@@ -29,7 +29,7 @@ pub enum Role {
 
 pub enum Parent {
     Native(NativeRef),
-    Accessible(Arc<Accessible>),
+    Accessible(Arc<dyn Accessible>),
 }
 
 pub struct Position {
@@ -44,7 +44,7 @@ pub struct Dimensions {
 
 pub trait Accessible {
     fn parent(&self) -> Parent;
-    fn children(&self) -> Vec<Arc<Accessible>>;
+    fn children(&self) -> Vec<Arc<dyn Accessible>>;
     fn role(&self) -> Role;
     fn title(&self) -> Option<String>;
     fn value(&self) -> Option<String>;
@@ -52,9 +52,9 @@ pub trait Accessible {
     fn dimensions(&self) -> Dimensions;
 }
 
-fn native_id(accessible: &Arc<Accessible>) -> *const libc::c_void {
+fn native_id(accessible: &Arc<dyn Accessible>) -> *const libc::c_void {
     unsafe {
-        mem::transmute::<&Accessible, TraitObject>(&**accessible as &Accessible).data
+        mem::transmute::<&dyn Accessible, TraitObject>(&**accessible as &dyn Accessible).data
             as *const libc::c_void
     }
 }
@@ -63,7 +63,7 @@ pub fn to_native_ref<T: Accessible + 'static>(
     accessible: Arc<T>,
     cache: Arc<Mutex<NativeRefCache>>,
 ) -> NativeRef {
-    platform::implementation::to_native_ref(accessible as Arc<Accessible>, cache)
+    platform::implementation::to_native_ref(accessible as Arc<dyn Accessible>, cache)
 }
 
 pub fn init() {

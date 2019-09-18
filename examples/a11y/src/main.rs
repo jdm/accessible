@@ -12,7 +12,16 @@ fn resize_callback(width: u32, height: u32) {
     println!("Window resized to {}x{}", width, height);
 }
 
-struct RootAccessible(Mutex<(Vec<Arc<Accessible>>, Option<NativeRef>, i32, i32, u32, u32)>);
+struct RootAccessible(
+    Mutex<(
+        Vec<Arc<dyn Accessible>>,
+        Option<NativeRef>,
+        i32,
+        i32,
+        u32,
+        u32,
+    )>,
+);
 struct TextAccessible(Arc<RootAccessible>, String, i32, i32, u32, u32);
 
 impl Accessible for RootAccessible {
@@ -20,7 +29,7 @@ impl Accessible for RootAccessible {
         Parent::Native(self.0.lock().unwrap().1.unwrap())
     }
 
-    fn children(&self) -> Vec<Arc<Accessible>> {
+    fn children(&self) -> Vec<Arc<dyn Accessible>> {
         println!(
             "getting root children: {:?}",
             self.0.lock().unwrap().0.len()
@@ -59,10 +68,10 @@ impl Accessible for RootAccessible {
 
 impl Accessible for TextAccessible {
     fn parent(&self) -> Parent {
-        Parent::Accessible(self.0.clone() as Arc<Accessible>)
+        Parent::Accessible(self.0.clone() as Arc<dyn Accessible>)
     }
 
-    fn children(&self) -> Vec<Arc<Accessible>> {
+    fn children(&self) -> Vec<Arc<dyn Accessible>> {
         vec![]
     }
 
@@ -141,9 +150,9 @@ fn main() {
             h,
         ));
         root.0.extend(vec![
-            text1 as Arc<Accessible>,
-            text2 as Arc<Accessible>,
-            text3 as Arc<Accessible>,
+            text1 as Arc<dyn Accessible>,
+            text2 as Arc<dyn Accessible>,
+            text3 as Arc<dyn Accessible>,
         ]);
     }
     window.set_title("A fantastic window!");

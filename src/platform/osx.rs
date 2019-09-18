@@ -13,11 +13,11 @@ pub type NativeRef = id;
 pub type NativeRefCache = HashMap<*const libc::c_void, id>;
 
 struct AccessibleState {
-    accessible: Arc<Accessible>,
+    accessible: Arc<dyn Accessible>,
     cache: Arc<Mutex<NativeRefCache>>,
 }
 
-pub fn to_native_ref(accessible: Arc<Accessible>, cache: Arc<Mutex<NativeRefCache>>) -> id {
+pub fn to_native_ref(accessible: Arc<dyn Accessible>, cache: Arc<Mutex<NativeRefCache>>) -> id {
     let aid = native_id(&accessible);
     if let Some(cached) = cache.lock().unwrap().get(&aid) {
         return *cached;
@@ -66,7 +66,7 @@ fn cache(this: &Object) -> Arc<Mutex<NativeRefCache>> {
     }
 }
 
-fn native(this: &Object) -> Arc<Accessible> {
+fn native(this: &Object) -> Arc<dyn Accessible> {
     unsafe {
         let state: *mut libc::c_void = *this.get_ivar("native");
         let state = state as *mut AccessibleState;

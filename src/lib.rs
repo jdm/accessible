@@ -54,11 +54,15 @@ pub trait Accessible {
 
 fn native_id(accessible: &Arc<Accessible>) -> *const libc::c_void {
     unsafe {
-        mem::transmute::<&Accessible, TraitObject>(&**accessible as &Accessible).data as *const libc::c_void
+        mem::transmute::<&Accessible, TraitObject>(&**accessible as &Accessible).data
+            as *const libc::c_void
     }
 }
 
-pub fn to_native_ref<T: Accessible + 'static>(accessible: Arc<T>, cache: Arc<Mutex<NativeRefCache>>) -> NativeRef {
+pub fn to_native_ref<T: Accessible + 'static>(
+    accessible: Arc<T>,
+    cache: Arc<Mutex<NativeRefCache>>,
+) -> NativeRef {
     platform::implementation::to_native_ref(accessible as Arc<Accessible>, cache)
 }
 

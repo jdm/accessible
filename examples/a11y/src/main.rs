@@ -1,8 +1,8 @@
 extern crate accessible;
-extern crate glutin;
 extern crate gleam;
+extern crate glutin;
 
-use accessible::{Accessible, Role, Parent, NativeRef, Dimensions, Position};
+use accessible::{Accessible, Dimensions, NativeRef, Parent, Position, Role};
 use std::default::Default;
 use std::sync::{Arc, Mutex};
 
@@ -21,7 +21,10 @@ impl Accessible for RootAccessible {
     }
 
     fn children(&self) -> Vec<Arc<Accessible>> {
-        println!("getting root children: {:?}", self.0.lock().unwrap().0.len());
+        println!(
+            "getting root children: {:?}",
+            self.0.lock().unwrap().0.len()
+        );
         self.0.lock().unwrap().0.clone()
     }
 
@@ -113,18 +116,44 @@ fn main() {
         let w = 100;
         let h = 50;
         let y = pos.1 + 50;
-        let text1 = Arc::new(TextAccessible(r.clone(), "first text".to_owned(), pos.0, y , w, h));
-        let text2 = Arc::new(TextAccessible(r.clone(), "second text".to_owned(), pos.0 + w as i32, y, w, h));
-        let text3 = Arc::new(TextAccessible(r, "third text".to_owned(), pos.0 + 2*w as i32, y, w, h));
-        root.0.extend(vec![text1 as Arc<Accessible>,
-                           text2 as Arc<Accessible>,
-                           text3 as Arc<Accessible>]);
+        let text1 = Arc::new(TextAccessible(
+            r.clone(),
+            "first text".to_owned(),
+            pos.0,
+            y,
+            w,
+            h,
+        ));
+        let text2 = Arc::new(TextAccessible(
+            r.clone(),
+            "second text".to_owned(),
+            pos.0 + w as i32,
+            y,
+            w,
+            h,
+        ));
+        let text3 = Arc::new(TextAccessible(
+            r,
+            "third text".to_owned(),
+            pos.0 + 2 * w as i32,
+            y,
+            w,
+            h,
+        ));
+        root.0.extend(vec![
+            text1 as Arc<Accessible>,
+            text2 as Arc<Accessible>,
+            text3 as Arc<Accessible>,
+        ]);
     }
     window.set_title("A fantastic window!");
     window.set_window_resize_callback(Some(resize_callback as fn(u32, u32)));
     let _ = unsafe { window.make_current() };
 
-    println!("Pixel format of the window: {:?}", window.get_pixel_format());
+    println!(
+        "Pixel format of the window: {:?}",
+        window.get_pixel_format()
+    );
 
     support::load(&window);
 
@@ -136,7 +165,7 @@ fn main() {
 
         match event {
             glutin::Event::Closed => break,
-            _ => ()
+            _ => (),
         }
     }
 }

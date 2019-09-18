@@ -1,6 +1,6 @@
-use std::mem;
-use glutin;
 use gleam::gl;
+use glutin;
+use std::mem;
 
 pub fn load(window: &glutin::Window) {
     gl::load_with(|ptr| window.get_proc_address(ptr) as *const _);
@@ -34,12 +34,22 @@ pub fn load(window: &glutin::Window) {
 
     let pos_attrib = gl::get_attrib_location(program, "position");
     let color_attrib = gl::get_attrib_location(program, "color");
-    gl::vertex_attrib_pointer(pos_attrib as gl::types::GLuint, 2, gl::FLOAT, false,
-                              5 * mem::size_of::<f32>() as gl::types::GLsizei,
-                              0);
-    gl::vertex_attrib_pointer(color_attrib as gl::types::GLuint, 3, gl::FLOAT, false,
-                              5 * mem::size_of::<f32>() as gl::types::GLsizei,
-                              (2 * mem::size_of::<f32>()) as u32);
+    gl::vertex_attrib_pointer(
+        pos_attrib as gl::types::GLuint,
+        2,
+        gl::FLOAT,
+        false,
+        5 * mem::size_of::<f32>() as gl::types::GLsizei,
+        0,
+    );
+    gl::vertex_attrib_pointer(
+        color_attrib as gl::types::GLuint,
+        3,
+        gl::FLOAT,
+        false,
+        5 * mem::size_of::<f32>() as gl::types::GLsizei,
+        (2 * mem::size_of::<f32>()) as u32,
+    );
     gl::enable_vertex_attrib_array(pos_attrib as gl::types::GLuint);
     gl::enable_vertex_attrib_array(color_attrib as gl::types::GLuint);
 }
@@ -52,9 +62,7 @@ pub fn draw_frame(color: (f32, f32, f32, f32)) {
 }
 
 static VERTEX_DATA: [f32; 15] = [
-    -0.5, -0.5, 1.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 1.0, 0.0,
-    0.5, -0.5, 0.0, 0.0, 1.0
+    -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 0.5, 0.0, 1.0, 0.0, 0.5, -0.5, 0.0, 0.0, 1.0,
 ];
 
 const VS_SRC: &'static [u8] = b"

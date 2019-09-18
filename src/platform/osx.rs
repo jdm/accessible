@@ -190,7 +190,7 @@ fn class() -> *const Class {
     INIT.call_once(|| unsafe {
         // Create new NSObject
         let superclass = Class::get("NSObject").unwrap();
-        let mut decl = ClassDecl::new(superclass, "AccessibleObject").unwrap();
+        let mut decl = ClassDecl::new("AccessibleObject", superclass).unwrap();
 
         decl.add_method(sel!(accessibilityAttributeNames),
                         accessibility_attribute_names as extern fn(&Object, Sel) -> id);

@@ -1,12 +1,12 @@
+use super::super::{native_id, Accessible, Parent, Role};
 use cocoa::base::{id, nil, BOOL};
-use cocoa::foundation::{NSArray, NSString, NSPoint, NSValue, NSSize};
+use cocoa::foundation::{NSArray, NSPoint, NSSize, NSString, NSValue};
 use libc;
 use objc::declare::ClassDecl;
 use objc::runtime::{Class, Object, Sel};
 use std::collections::HashMap;
 use std::ffi::CStr;
-use std::sync::{Once, ONCE_INIT, Arc, Mutex};
-use super::super::{Accessible, Role, Parent, native_id};
+use std::sync::{Arc, Mutex, Once, ONCE_INIT};
 
 pub type NativeRef = id;
 
@@ -17,16 +17,22 @@ struct AccessibleState {
     cache: Arc<Mutex<NativeRefCache>>,
 }
 
-pub fn to_native_ref(accessible: Arc<Accessible>, cache: Arc<Mutex<NativeRefCache>>,) -> id {
+pub fn to_native_ref(accessible: Arc<Accessible>, cache: Arc<Mutex<NativeRefCache>>) -> id {
     let aid = native_id(&accessible);
     if let Some(cached) = cache.lock().unwrap().get(&aid) {
         return *cached;
     }
 
-    let state = AccessibleState { accessible: accessible, cache: cache.clone() };
+    let state = AccessibleState {
+        accessible: accessible,
+        cache: cache.clone(),
+    };
     unsafe {
         let id: id = msg_send![class(), new];
-        (&mut *id).set_ivar("native", Box::into_raw(Box::new(state)) as *mut libc::c_void);
+        (&mut *id).set_ivar(
+            "native",
+            Box::into_raw(Box::new(state)) as *mut libc::c_void,
+        );
         let id = msg_send![id, retain];
         cache.lock().unwrap().insert(aid, id);
         debug!("returning {:?}", id);
@@ -57,7 +63,7 @@ fn cache(this: &Object) -> Arc<Mutex<NativeRefCache>> {
         let state = state as *mut AccessibleState;
         let state = &*state;
         state.cache.clone()
-    }    
+    }
 }
 
 fn native(this: &Object) -> Arc<Accessible> {
@@ -70,38 +76,45 @@ fn native(this: &Object) -> Arc<Accessible> {
 }
 
 fn class() -> *const Class {
-    extern fn accessibility_attribute_names(this: &Object, _: Sel) -> id {
+    extern "C" fn accessibility_attribute_names(this: &Object, _: Sel) -> id {
         println!("getting a11y attribute names for {:?}", this);
         //TODO: make this static
         unsafe {
-            let attributes = vec![NSString::alloc(nil).init_str("AXChildren"),
-                                  NSString::alloc(nil).init_str("AXParent"),
-                                  NSString::alloc(nil).init_str("AXRole"),
-                                  NSString::alloc(nil).init_str("AXTitle"),
-                                  NSString::alloc(nil).init_str("AXValue"),
-                                  NSString::alloc(nil).init_str("AXSize"),
-                                  NSString::alloc(nil).init_str("AXPosition"),
-                                  /*NSString::alloc(nil).init_str("AXSubrole"),
-                                  NSString::alloc(nil).init_str("AXRoleDescription"),
-                                  NSString::alloc(nil).init_str("AXAccessibilityEnabled"),
-                                  NSString::alloc(nil).init_str("AXWindow"),
-                                  NSString::alloc(nil).init_str("AXFocused"),
-                                  NSString::alloc(nil).init_str("AXHelp"),
-                                  NSString::alloc(nil).init_str("AXTitleUIElement"),
-                                  NSString::alloc(nil).init_str("AXTopLevelUIElement")*/];
+            let attributes = vec![
+                NSString::alloc(nil).init_str("AXChildren"),
+                NSString::alloc(nil).init_str("AXParent"),
+                NSString::alloc(nil).init_str("AXRole"),
+                NSString::alloc(nil).init_str("AXTitle"),
+                NSString::alloc(nil).init_str("AXValue"),
+                NSString::alloc(nil).init_str("AXSize"),
+                NSString::alloc(nil).init_str("AXPosition"),
+                /*NSString::alloc(nil).init_str("AXSubrole"),
+                NSString::alloc(nil).init_str("AXRoleDescription"),
+                NSString::alloc(nil).init_str("AXAccessibilityEnabled"),
+                NSString::alloc(nil).init_str("AXWindow"),
+                NSString::alloc(nil).init_str("AXFocused"),
+                NSString::alloc(nil).init_str("AXHelp"),
+                NSString::alloc(nil).init_str("AXTitleUIElement"),
+                NSString::alloc(nil).init_str("AXTopLevelUIElement")*/
+            ];
             NSArray::arrayWithObjects(nil, &attributes)
         }
     }
 
-    extern fn accessibility_attribute_value(this: &Object, _: Sel, attribute: id) -> id {
+    extern "C" fn accessibility_attribute_value(this: &Object, _: Sel, attribute: id) -> id {
         unsafe {
-            info!("accessible {:?}: {:?}", this, CStr::from_ptr(attribute.UTF8String()));
+            info!(
+                "accessible {:?}: {:?}",
+                this,
+                CStr::from_ptr(attribute.UTF8String())
+            );
 
             if attribute.isEqualToString("AXChildren") {
-                let children: Vec<id> = native(this).children()
-                                                    .into_iter()
-                                                    .map(|child| to_native_ref(child, cache(this)))
-                                                    .collect();
+                let children: Vec<id> = native(this)
+                    .children()
+                    .into_iter()
+                    .map(|child| to_native_ref(child, cache(this)))
+                    .collect();
                 debug!("returning {:?}", children);
                 return NSArray::arrayWithObjects(nil, &children);
             }
@@ -114,7 +127,7 @@ fn class() -> *const Class {
             }
 
             if attribute.isEqualToString("AXRole") {
-                return NSString::alloc(nil).init_str(&native(this).role().to_axrole())
+                return NSString::alloc(nil).init_str(&native(this).role().to_axrole());
             }
 
             if attribute.isEqualToString("AXTitle") {
@@ -153,36 +166,35 @@ fn class() -> *const Class {
         }
     }
 
-    extern fn accessibility_hit_test(_this: &Object, _: Sel, _point: NSPoint) -> id {
+    extern "C" fn accessibility_hit_test(_this: &Object, _: Sel, _point: NSPoint) -> id {
         nil
     }
 
-    extern fn accessibility_is_ignored(_this: &Object, _: Sel) -> BOOL {
+    extern "C" fn accessibility_is_ignored(_this: &Object, _: Sel) -> BOOL {
         false as BOOL
     }
 
-    extern fn accessibility_focused_uielement(_this: &Object, _: Sel) -> id {
+    extern "C" fn accessibility_focused_uielement(_this: &Object, _: Sel) -> id {
         nil
     }
 
-    extern fn accessibility_is_attribute_settable(_this: &Object, _: Sel, _attribute: id) -> BOOL {
+    extern "C" fn accessibility_is_attribute_settable(
+        _this: &Object,
+        _: Sel,
+        _attribute: id,
+    ) -> BOOL {
         false as BOOL
     }
 
-    extern fn accessibility_action_names(_this: &Object, _: Sel) -> id {
-        unsafe {
-            NSArray::array(nil)
-        }
+    extern "C" fn accessibility_action_names(_this: &Object, _: Sel) -> id {
+        unsafe { NSArray::array(nil) }
     }
 
-    extern fn accessibility_action_description(_this: &Object, _: Sel, _action: id) -> id {
-        unsafe {
-            NSString::alloc(nil).init_str("")
-        }
+    extern "C" fn accessibility_action_description(_this: &Object, _: Sel, _action: id) -> id {
+        unsafe { NSString::alloc(nil).init_str("") }
     }
 
-    extern fn accessibility_perform_action(_this: &Object, _: Sel, _action: id) {
-    }
+    extern "C" fn accessibility_perform_action(_this: &Object, _: Sel, _action: id) {}
 
     static mut object_class: *const Class = 0 as *const Class;
     static INIT: Once = ONCE_INIT;
@@ -192,34 +204,49 @@ fn class() -> *const Class {
         let superclass = Class::get("NSObject").unwrap();
         let mut decl = ClassDecl::new("AccessibleObject", superclass).unwrap();
 
-        decl.add_method(sel!(accessibilityAttributeNames),
-                        accessibility_attribute_names as extern fn(&Object, Sel) -> id);
-        decl.add_method(sel!(accessibilityAttributeValue:),
-                        accessibility_attribute_value as extern fn(&Object, Sel, id) -> id);
-        decl.add_method(sel!(accessibilityHitTest:),
-                        accessibility_hit_test as extern fn(&Object, Sel, NSPoint) -> id);
-        decl.add_method(sel!(accessibilityIsIgnored),
-                        accessibility_is_ignored as extern fn(&Object, Sel) -> BOOL);
-        decl.add_method(sel!(accessibilityFocusedUIElement),
-                        accessibility_focused_uielement as extern fn(&Object, Sel) -> id);
-        decl.add_method(sel!(accessibilityIsAttributeSettable:),
-                        accessibility_is_attribute_settable as extern fn(&Object, Sel, id) -> BOOL);
-        decl.add_method(sel!(accessibilityActionNames),
-                        accessibility_action_names as extern fn(&Object, Sel) -> id);
-        decl.add_method(sel!(accessibilityActionDescription:),
-                        accessibility_action_description as extern fn(&Object, Sel, id) -> id);
-        decl.add_method(sel!(accessibilityPerformAction:),
-                        accessibility_perform_action as extern fn(&Object, Sel, id));
+        decl.add_method(
+            sel!(accessibilityAttributeNames),
+            accessibility_attribute_names as extern "C" fn(&Object, Sel) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityAttributeValue:),
+            accessibility_attribute_value as extern "C" fn(&Object, Sel, id) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityHitTest:),
+            accessibility_hit_test as extern "C" fn(&Object, Sel, NSPoint) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityIsIgnored),
+            accessibility_is_ignored as extern "C" fn(&Object, Sel) -> BOOL,
+        );
+        decl.add_method(
+            sel!(accessibilityFocusedUIElement),
+            accessibility_focused_uielement as extern "C" fn(&Object, Sel) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityIsAttributeSettable:),
+            accessibility_is_attribute_settable as extern "C" fn(&Object, Sel, id) -> BOOL,
+        );
+        decl.add_method(
+            sel!(accessibilityActionNames),
+            accessibility_action_names as extern "C" fn(&Object, Sel) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityActionDescription:),
+            accessibility_action_description as extern "C" fn(&Object, Sel, id) -> id,
+        );
+        decl.add_method(
+            sel!(accessibilityPerformAction:),
+            accessibility_perform_action as extern "C" fn(&Object, Sel, id),
+        );
 
         decl.add_ivar::<*mut libc::c_void>("native");
 
         object_class = decl.register();
     });
 
-    unsafe {
-        object_class
-    }
+    unsafe { object_class }
 }
 
-pub fn init() {
-}
+pub fn init() {}

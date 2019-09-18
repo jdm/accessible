@@ -24,7 +24,7 @@ pub fn to_native_ref(accessible: Arc<dyn Accessible>, cache: Arc<Mutex<NativeRef
     }
 
     let state = AccessibleState {
-        accessible: accessible,
+        accessible,
         cache: cache.clone(),
     };
     unsafe {

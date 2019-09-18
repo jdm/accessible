@@ -196,7 +196,7 @@ fn class() -> *const Class {
 
     extern "C" fn accessibility_perform_action(_this: &Object, _: Sel, _action: id) {}
 
-    static mut object_class: *const Class = 0 as *const Class;
+    static mut OBJECT_CLASS: *const Class = 0 as *const Class;
     static INIT: Once = Once::new();
 
     INIT.call_once(|| unsafe {
@@ -243,10 +243,10 @@ fn class() -> *const Class {
 
         decl.add_ivar::<*mut libc::c_void>("native");
 
-        object_class = decl.register();
+        OBJECT_CLASS = decl.register();
     });
 
-    unsafe { object_class }
+    unsafe { OBJECT_CLASS }
 }
 
 pub fn init() {}

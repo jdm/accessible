@@ -12,4 +12,4 @@ dbus = "0.2.1"
 
 [target.x86_64-apple-darwin.dependencies]
 cocoa = {git = "https://github.com/servo/cocoa-rs.git"}
-objc = "0.1.8"
+objc = "0.2"
